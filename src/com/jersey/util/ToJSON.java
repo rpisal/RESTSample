@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.owasp.esapi.ESAPI;
 
 /**
  * This utility will convert a database data into JSON format. Note: this java
@@ -27,7 +28,7 @@ public class ToJSON {
 	 */
 	public JSONArray toJSONArray(ResultSet rs) throws Exception {
 		JSONArray json = new JSONArray(); // JSON array that will be returned
-		//String temp = null;
+		String temp = null;
 
 		try {
 			// we will need the column names, this will save the table meta-data like column name.
@@ -68,8 +69,12 @@ public class ToJSON {
 						obj.put(column_name, rs.getNString(column_name));
 						/* Debug */System.out.println("ToJson: NVARCHAR");
 					} else if (rsmd.getColumnType(i) == java.sql.Types.VARCHAR) {
-						obj.put(column_name, rs.getString(column_name));
-						/*Debug*/ System.out.println("ToJson: VARCHAR");
+						temp = rs.getString(column_name); //saving column data to temp variable
+	                    temp = ESAPI.encoder().canonicalize(temp); //decoding data to base state
+	                    temp = ESAPI.encoder().encodeForHTML(temp); //encoding to be browser safe
+	                    obj.put(column_name, temp); //putting data into JSON object
+						//obj.put(column_name, rs.getString(column_name));
+						// /*Debug*/ System.out.println("ToJson: VARCHAR");
 					} else if (rsmd.getColumnType(i) == java.sql.Types.TINYINT) {
 						obj.put(column_name, rs.getInt(column_name));
 						/* Debug */System.out.println("ToJson: TINYINT");
